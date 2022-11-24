@@ -39,4 +39,4 @@ app.UseAuthorization();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.MapControllers();
 
-app.Run("http://localhost:9001");
+app.Run("http://+:9001");
