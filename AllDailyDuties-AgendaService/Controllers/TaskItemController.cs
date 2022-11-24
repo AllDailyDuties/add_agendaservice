@@ -1,6 +1,7 @@
 ﻿using AllDailyDuties_AgendaService.Models.Tasks;
 using AllDailyDuties_AgendaService.Services.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AllDailyDuties_AgendaService.Controllers
@@ -20,6 +21,7 @@ namespace AllDailyDuties_AgendaService.Controllers
             _mapper = mapper;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult GetAll()
         {
