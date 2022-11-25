@@ -3,6 +3,13 @@ using AllDailyDuties_AgendaService.Services.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+using AllDailyDuties_AgendaService.Middleware.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using System.IdentityModel.Tokens.Jwt;
+using AllDailyDuties_AgendaService.Models.Shared;
+using AllDailyDuties_AgendaService.Middleware.Messaging;
 
 namespace AllDailyDuties_AgendaService.Controllers
 {
@@ -13,12 +20,18 @@ namespace AllDailyDuties_AgendaService.Controllers
         private readonly ILogger<TaskItemController> _logger;
         private ITaskService _taskService;
         private IMapper _mapper;
-        public TaskItemController(ILogger<TaskItemController> logger, ITaskService userService,
-        IMapper mapper)
+        private IJwtUtils _jwtUtils;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRabbitMQProducer _rabbit;
+        public TaskItemController(ILogger<TaskItemController> logger, ITaskService taskservice,
+        IMapper mapper, IJwtUtils jwtUtils, IHttpContextAccessor httpContextAccessor, IRabbitMQProducer rabbit)
         {
             _logger = logger;
-            _taskService = userService;
+            _taskService = taskservice;
             _mapper = mapper;
+            _jwtUtils = jwtUtils;
+            _httpContextAccessor = httpContextAccessor;
+            _rabbit = rabbit;
         }
 
         [Authorize(Roles = "Admin")]
@@ -42,6 +55,15 @@ namespace AllDailyDuties_AgendaService.Controllers
         {
             _taskService.Create(model);
             return Ok(new { message = "Task created" });
+        }
+        [HttpPost]
+        [Route("/message")]
+        public async Task<IActionResult> CreateTask()
+        {
+            string encodedToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+            var uid = _jwtUtils.ValidateToken(encodedToken);
+            _rabbit.SendMessage(uid);
+            return Ok();
         }
     }
 }

@@ -1,8 +1,7 @@
 ﻿namespace AllDailyDuties_AgendaService.Models.Shared
 {
-    public class User
+    public interface IAuthMessage
     {
-        public Guid Id { get; set; }
-
+        Guid uid { get; set; }
     }
 }
