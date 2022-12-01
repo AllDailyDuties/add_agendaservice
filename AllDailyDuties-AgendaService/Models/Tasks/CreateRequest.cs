@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace AllDailyDuties_AgendaService.Models.Tasks
 {
     public class CreateRequest
-    {   [Required]
+    {   
         public Guid Id { get; set; }
         [Required]
         public string Title { get; set; }
@@ -13,7 +13,7 @@ namespace AllDailyDuties_AgendaService.Models.Tasks
         [Required]
         public DateTime ScheduledAt { get; set; }
         [Required]
-        public List<User>? Users { get; set; }
+        public TaskUser User { get; set; }
 
     }
 }

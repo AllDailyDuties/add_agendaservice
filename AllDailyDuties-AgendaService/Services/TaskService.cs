@@ -1,8 +1,11 @@
 ﻿using AllDailyDuties_AgendaService.Helpers;
+using AllDailyDuties_AgendaService.Models.Shared;
 using AllDailyDuties_AgendaService.Models.Tasks;
 using AllDailyDuties_AgendaService.Services.Interfaces;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.Dynamic;
 
 namespace AllDailyDuties_AgendaService.Services
 {
@@ -26,9 +29,22 @@ namespace AllDailyDuties_AgendaService.Services
         {
             return getUser(id);
         }
+
+        public TaskUser GetTaskUser(string message)
+        {
+            TaskUser user = JsonConvert.DeserializeObject<TaskUser>(message);
+            return user;
+
+        }
+
+        public TaskUser Return(TaskUser user)
+        {
+            return user;
+        }
+
         public void Create(CreateRequest model)
         {
-            // map model to new user object
+            // map model to new object
             var task = _mapper.Map<TaskItem>(model);
 
             // save user.

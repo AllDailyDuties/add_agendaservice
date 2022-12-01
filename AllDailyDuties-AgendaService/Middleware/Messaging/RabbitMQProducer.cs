@@ -6,7 +6,6 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
 {
     public class RabbitMQProducer : IRabbitMQProducer
     {
-
         public void SendMessage<T>(T message)
         {
             var factory = new ConnectionFactory
@@ -23,7 +22,12 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             var json = JsonConvert.SerializeObject(message);
             var body = Encoding.UTF8.GetBytes(json);
             //put the data on to the product queue
-            channel.BasicPublish(exchange: "", routingKey: "auth_token", body: body);
+            var props = channel.CreateBasicProperties();
+            props = channel.CreateBasicProperties();
+            string correlationId = Guid.NewGuid().ToString();
+            props.CorrelationId = correlationId;
+
+            channel.BasicPublish(exchange: "", routingKey: "auth_token", props, body: body);
 
         }
     }

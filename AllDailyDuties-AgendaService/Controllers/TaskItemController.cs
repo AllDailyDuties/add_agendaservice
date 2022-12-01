@@ -65,5 +65,6 @@ namespace AllDailyDuties_AgendaService.Controllers
             _rabbit.SendMessage(uid);
             return Ok();
         }
+
     }
 }

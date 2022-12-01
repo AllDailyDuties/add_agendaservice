@@ -2,6 +2,6 @@
 {
     public interface IAuthMessage
     {
-        Guid uid { get; set; }
+        Guid Uid { get; set; }
     }
 }
