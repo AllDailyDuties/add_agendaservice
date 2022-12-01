@@ -1,23 +1,18 @@
 ﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace AllDailyDuties_AgendaService.Middleware.Messaging
 {
     public class RabbitMQProducer : IRabbitMQProducer
     {
-        public void SendMessage<T>(T message)
+        public string SendMessage<T>(T message, string queue)
         {
-            var factory = new ConnectionFactory
-            {
-                HostName = "localhost"
-            };
-            //Create the RabbitMQ connection using connection factory details as i mentioned above
-            var connection = factory.CreateConnection();
-            //Here we create channel with session and model
-            using var channel = connection.CreateModel();
+            using var channel = RabbitMQConnection.Instance.Connection.CreateModel();
             //declare the queue after mentioning name and a few property related to that
-            channel.QueueDeclare("auth_token", exclusive: false);
+            channel.QueueDeclare(queue, exclusive: false);
             //Serialize the message
             var json = JsonConvert.SerializeObject(message);
             var body = Encoding.UTF8.GetBytes(json);
@@ -27,8 +22,9 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             string correlationId = Guid.NewGuid().ToString();
             props.CorrelationId = correlationId;
 
-            channel.BasicPublish(exchange: "", routingKey: "auth_token", props, body: body);
-
+            channel.BasicPublish(exchange: "", routingKey: queue, props, body: body);
+            return correlationId;
         }
+
     }
 }

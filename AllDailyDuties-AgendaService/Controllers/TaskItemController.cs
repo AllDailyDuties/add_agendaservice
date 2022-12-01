@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using System.IdentityModel.Tokens.Jwt;
 using AllDailyDuties_AgendaService.Models.Shared;
 using AllDailyDuties_AgendaService.Middleware.Messaging;
+using AllDailyDuties_AgendaService.Middleware.Messaging.Interfaces;
 
 namespace AllDailyDuties_AgendaService.Controllers
 {
@@ -23,8 +24,9 @@ namespace AllDailyDuties_AgendaService.Controllers
         private IJwtUtils _jwtUtils;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRabbitMQProducer _rabbit;
+        private readonly IRabbitMQConsumer _rabbitConsumer;
         public TaskItemController(ILogger<TaskItemController> logger, ITaskService taskservice,
-        IMapper mapper, IJwtUtils jwtUtils, IHttpContextAccessor httpContextAccessor, IRabbitMQProducer rabbit)
+        IMapper mapper, IJwtUtils jwtUtils, IHttpContextAccessor httpContextAccessor, IRabbitMQProducer rabbit, IRabbitMQConsumer rabbitConsumer)
         {
             _logger = logger;
             _taskService = taskservice;
@@ -32,6 +34,7 @@ namespace AllDailyDuties_AgendaService.Controllers
             _jwtUtils = jwtUtils;
             _httpContextAccessor = httpContextAccessor;
             _rabbit = rabbit;
+            
         }
 
         [Authorize(Roles = "Admin")]
@@ -58,11 +61,13 @@ namespace AllDailyDuties_AgendaService.Controllers
         }
         [HttpPost]
         [Route("/message")]
-        public async Task<IActionResult> CreateTask()
+        public async Task<IActionResult> CreateTask(string title)
         {
             string encodedToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
             var uid = _jwtUtils.ValidateToken(encodedToken);
-            _rabbit.SendMessage(uid);
+            string corrId = _rabbit.SendMessage(uid, "auth_token");
+
+            
             return Ok();
         }
 

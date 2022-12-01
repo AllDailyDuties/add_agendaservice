@@ -11,6 +11,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
     public class RabbitMQConsumer : IRabbitMQConsumer
     {
         private ITaskService _taskService;
+        public TaskUser user;
         public RabbitMQConsumer(ITaskService taskService)
         {
             _taskService = taskService;
@@ -22,6 +23,9 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += (model, eventArgs) =>
             {
+                var props = eventArgs.BasicProperties;
+                var replyProps = channel.CreateBasicProperties();
+                replyProps.CorrelationId = props.CorrelationId;
                 var body = eventArgs.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 TaskUser user = _taskService.GetTaskUser(message);

@@ -11,14 +11,6 @@ using RabbitMQ.Client.Events;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-var factory = new ConnectionFactory
-{
-    HostName = "localhost"
-};
-
-var connection = factory.CreateConnection();
-//Here we create channel with session and model
-using var channel = connection.CreateModel();
 
 //Console.ReadKey();
 // Add services to the container.
@@ -48,6 +40,7 @@ builder.Services.AddAuthentication(x =>
 
 var app = builder.Build();
 
+using var channel = RabbitMQConnection.Instance.Connection.CreateModel();
 using (var scope = app.Services.CreateScope())
 {
     var rabbiqMq = scope.ServiceProvider.GetRequiredService<IRabbitMQConsumer>();
