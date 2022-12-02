@@ -18,11 +18,18 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             var body = Encoding.UTF8.GetBytes(json);
             //put the data on to the product queue
             var props = channel.CreateBasicProperties();
-            props = channel.CreateBasicProperties();
             string correlationId = Guid.NewGuid().ToString();
             props.CorrelationId = correlationId;
 
             channel.BasicPublish(exchange: "", routingKey: queue, props, body: body);
+
+            var jsonObj = JsonConvert.SerializeObject(new { title = "my_post", description = "Such an awesome post!" });
+
+            var cache = RedisConnection.Connection.GetDatabase();
+
+            cache.StringSet(correlationId, jsonObj);
+
+
             return correlationId;
         }
 

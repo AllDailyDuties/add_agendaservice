@@ -18,6 +18,9 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
         }
         public void ConsumeMessage(IModel channel, string queue)
         {
+            var cache = RedisConnection.Connection.GetDatabase();
+            
+
             channel.QueueDeclare(queue, exclusive: false);
             //Set Event object which listen message from chanel which is sent by producer
             var consumer = new EventingBasicConsumer(channel);
@@ -26,10 +29,14 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
                 var props = eventArgs.BasicProperties;
                 var replyProps = channel.CreateBasicProperties();
                 replyProps.CorrelationId = props.CorrelationId;
+                if(cache.KeyExists(props.CorrelationId)){
+                    var output = cache.StringGet(props.CorrelationId);
+                    Console.WriteLine(output);
+                }
                 var body = eventArgs.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 TaskUser user = _taskService.GetTaskUser(message);
-                Console.WriteLine($"Token message received: {message}");
+                Console.WriteLine($"Token message received: {message} with corrId: {props.CorrelationId}");
             };
             //read the message
             channel.BasicConsume(queue: queue, autoAck: true, consumer: consumer);
