@@ -1,6 +1,8 @@
 ﻿using AllDailyDuties_AgendaService.Helpers;
 using AllDailyDuties_AgendaService.Models.Shared;
 using AllDailyDuties_AgendaService.Models.Tasks;
+using AllDailyDuties_AgendaService.Repositories;
+using AllDailyDuties_AgendaService.Repositories.Interfaces;
 using AllDailyDuties_AgendaService.Services.Interfaces;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +13,16 @@ namespace AllDailyDuties_AgendaService.Services
 {
     public class TaskService : ITaskService
     {
-        private DataContext _context;
+        private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private ITaskItemRepo _repo;
 
-        public TaskService(DataContext context, IMapper mapper)
+
+        public TaskService(IConfiguration config, DataContext context, IMapper mapper, ITaskItemRepo repo)
         {
             _context = context;
             _mapper = mapper;
+            _repo = repo;
         }
 
         public IEnumerable<TaskItem> GetAll()
@@ -41,8 +46,7 @@ namespace AllDailyDuties_AgendaService.Services
         {
             return user;
         }
-
-        public void Create(CreateRequest model)
+        public async void Create(CreateRequest model)
         {
             // map model to new object
             var task = _mapper.Map<TaskItem>(model);
@@ -50,7 +54,32 @@ namespace AllDailyDuties_AgendaService.Services
             // save user.
             _context.Tasks.Add(task);
             _context.SaveChanges();
+
         }
+        public async Task<bool> CreateNewTask(CreateRequest model)
+        {
+            await _repo.AddAsync(model);
+            return true;
+        }
+
+
+        public async Task<bool> AddAsync(CreateRequest entity)
+        {
+            
+            try
+            {
+                var task = _mapper.Map<TaskItem>(entity);
+                var result = await _context.AddAsync(task);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                // Any ConcurrencyException caught during updating records should be handled here (e.g. trying to update a deleted entry)
+                return false;
+            }
+        }
+
 
         // Helper method(s)
         private TaskItem getUser(Guid id)

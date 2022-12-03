@@ -2,6 +2,6 @@
 {
     public interface IRabbitMQProducer
     {
-        public string SendMessage<T>(T message, string queue);
+        public void SendMessage<T>(T message, string queue, object obj);
     }
 }

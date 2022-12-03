@@ -12,12 +12,15 @@ using AllDailyDuties_AgendaService.Models.Shared;
 using AllDailyDuties_AgendaService.Middleware.Messaging;
 using AllDailyDuties_AgendaService.Middleware.Messaging.Interfaces;
 
+using Newtonsoft.Json;
+
 namespace AllDailyDuties_AgendaService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class TaskItemController : ControllerBase
     {
+        private static readonly JsonSerializerSettings _settings = new JsonSerializerSettings { };
         private readonly ILogger<TaskItemController> _logger;
         private ITaskService _taskService;
         private IMapper _mapper;
@@ -61,15 +64,26 @@ namespace AllDailyDuties_AgendaService.Controllers
         }
         [HttpPost]
         [Route("/message")]
-        public async Task<IActionResult> CreateTask(string title)
+        public async Task<IActionResult> CreateTask(string title, DateTime createdAt, DateTime scheduledAt)
         {
+            var result = new TaskItemMessage()
+            {
+                Title = title,
+                CreatedAt = createdAt,
+                ScheduledAt = scheduledAt
+            };
+
+            object test = Serialize(result);
             string encodedToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
             var uid = _jwtUtils.ValidateToken(encodedToken);
-            string corrId = _rabbit.SendMessage(uid, "auth_token");
+            _rabbit.SendMessage(uid, "auth_token", result);
 
             
             return Ok();
         }
-
+        private static string Serialize(object obj)
+        {
+            return JsonConvert.SerializeObject(obj, _settings);
+        }
     }
 }

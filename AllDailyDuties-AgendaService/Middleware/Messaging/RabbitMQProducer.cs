@@ -8,10 +8,9 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
 {
     public class RabbitMQProducer : IRabbitMQProducer
     {
-        public string SendMessage<T>(T message, string queue)
+        public void SendMessage<T>(T message, string queue, object obj)
         {
             using var channel = RabbitMQConnection.Instance.Connection.CreateModel();
-            //declare the queue after mentioning name and a few property related to that
             channel.QueueDeclare(queue, exclusive: false);
             //Serialize the message
             var json = JsonConvert.SerializeObject(message);
@@ -22,15 +21,12 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             props.CorrelationId = correlationId;
 
             channel.BasicPublish(exchange: "", routingKey: queue, props, body: body);
-
-            var jsonObj = JsonConvert.SerializeObject(new { title = "my_post", description = "Such an awesome post!" });
+            //Convert anonymous object to JSON
+            var jsonObj = JsonConvert.SerializeObject(obj);
 
             var cache = RedisConnection.Connection.GetDatabase();
-
+            //Store object & corrId in Redis
             cache.StringSet(correlationId, jsonObj);
-
-
-            return correlationId;
         }
 
     }

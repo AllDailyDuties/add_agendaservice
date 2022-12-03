@@ -22,6 +22,13 @@ namespace AllDailyDuties_AgendaService.Models.Tasks
             ScheduledAt = _scheduledAt;
             User = _user;
         }
+        public TaskItem(string _title, DateTime _created, DateTime _scheduledAt, TaskUser _user)
+        {
+            Title = _title;
+            Created = _created;
+            ScheduledAt = _scheduledAt;
+            User = _user;
+        }
 
         public override string ToString()
         {

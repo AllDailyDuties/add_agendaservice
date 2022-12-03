@@ -9,5 +9,7 @@ namespace AllDailyDuties_AgendaService.Services.Interfaces
         IEnumerable<TaskItem> GetAll();
         TaskItem GetById(Guid id);
         void Create(CreateRequest model);
+        Task<bool> AddAsync(CreateRequest entity);
+        Task<bool> CreateNewTask(CreateRequest model);
     }
 }

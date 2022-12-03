@@ -1,24 +1,24 @@
-﻿using AllDailyDuties_AgendaService.Models.Tasks;
+﻿using AllDailyDuties_AgendaService.Models.Shared;
+using AllDailyDuties_AgendaService.Models.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace AllDailyDuties_AgendaService.Helpers
 {
     public class DataContext : DbContext
     {
-        protected readonly IConfiguration Configuration;
+        private DbContextOptionsBuilder<DataContext> contextOptions;
 
-        public DataContext(IConfiguration configuration)
+        //protected readonly IConfiguration Configuration;
+        public DataContext(DbContextOptions<DataContext> options)
+            : base(options)
         {
-            Configuration = configuration;
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        public DataContext(DbContextOptionsBuilder<DataContext> contextOptions)
         {
-            // connect to mysql with connection string from app settings
-            var connectionString = Configuration.GetConnectionString("Default");
-            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+            this.contextOptions = contextOptions;
         }
-
         public DbSet<TaskItem> Tasks { get; set; }
+        public DbSet<TaskUser> TaskUsers { get; set; }
     }
 }

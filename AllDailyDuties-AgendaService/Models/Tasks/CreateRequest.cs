@@ -14,6 +14,14 @@ namespace AllDailyDuties_AgendaService.Models.Tasks
         public DateTime ScheduledAt { get; set; }
         [Required]
         public TaskUser User { get; set; }
+        public CreateRequest(Guid _id, string _title, DateTime _createdAt, DateTime _scheduledAt, TaskUser _user)
+        {
+            Id = _id;
+            Title = _title;
+            Created = _createdAt;
+            ScheduledAt = _scheduledAt;
+            User = _user;
+        }
 
     }
 }
