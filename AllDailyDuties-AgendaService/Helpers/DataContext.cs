@@ -14,6 +14,7 @@ namespace AllDailyDuties_AgendaService.Helpers
         {
         }
 
+
         public DataContext(DbContextOptionsBuilder<DataContext> contextOptions)
         {
             this.contextOptions = contextOptions;

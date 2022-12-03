@@ -3,6 +3,7 @@ using AllDailyDuties_AgendaService.Models.Tasks;
 using AllDailyDuties_AgendaService.Repositories.Interfaces;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace AllDailyDuties_AgendaService.Repositories
 {
@@ -11,6 +12,7 @@ namespace AllDailyDuties_AgendaService.Repositories
         private static IServiceProvider _provider;
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+
         public TaskItemRepo(DataContext context, IMapper mapper)
         {
             _context = context;
@@ -20,9 +22,10 @@ namespace AllDailyDuties_AgendaService.Repositories
         {
             try
             {
-                var connectionstring = "server=localhost; port=3306; database=DailyDuties-AgendaService; user=root; password=1_1qwerty";
+                var conn = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("ConnectionStrings")["default"];
+                // Looked into overriding OnConfiguring method in DataContext but wasn't able to connect
                 var contextOptions = new DbContextOptionsBuilder<DataContext>()
-                    .UseMySql(connectionstring, ServerVersion.AutoDetect(connectionstring)).Options;
+                    .UseMySql(conn, ServerVersion.AutoDetect(conn)).Options;
                 var dbContext = new DataContext(contextOptions);
                 var task = _mapper.Map<TaskItem>(entity);
                 var result = await dbContext.AddAsync(task);
