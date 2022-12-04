@@ -1,3 +1,4 @@
+#Snyk workflow
 name: Example workflow for Python using Snyk
 on: push
 jobs:
