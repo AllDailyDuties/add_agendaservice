@@ -10,7 +10,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
         {
             IConnectionFactory connectionFactory = new ConnectionFactory
             {
-                HostName = "127.0.0.1",
+                HostName = "rabbitmq",
                 Port = 5672,
                 UserName = "guest",
                 Password = "guest"

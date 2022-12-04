@@ -9,7 +9,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             return ConnectionMultiplexer.Connect(
                 new ConfigurationOptions
                 {
-                    EndPoints = { "localhost:6379" }
+                    EndPoints = { "redis:6379" }
                 });
         });
 
