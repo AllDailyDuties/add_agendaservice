@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: set dir
-        run: cd $GITHUB_WORKSPACE/ 
+        run: cd $GITHUB_WORKSPACE/AllDailyDuties-AgendaService/
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/dotnet@master
