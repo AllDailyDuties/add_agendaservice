@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addagendaservice
+  labels:
+    app: addagendaservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: addagendaservice
+  template:
+    metadata:
+      labels:
+        app: addagendaservice
+    spec:
+      containers:
+      - name: addagendaservice
+        image: localhost:32000/addagendaservice:latest
+        ports:
+        - containerPort: 9001
+        resources:
+          limits:
+            memory: 2Gi
