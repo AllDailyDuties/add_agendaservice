@@ -1,0 +1,15 @@
+#Snyk workflow.
+name: Example workflow for Python using Snyk
+on: push
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set dir
+        run: cd AllDailyDuties-AgendaService/
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/dotnet@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        
