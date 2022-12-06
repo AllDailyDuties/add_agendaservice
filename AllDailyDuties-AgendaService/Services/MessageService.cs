@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace AllDailyDuties_AgendaService.Services
 {
-    public class MessageService<T> : IMessageService
+    public class MessageService : IMessageService
     {
         private ITaskService _taskService;
         private ITaskItemRepo _repo;
@@ -15,7 +15,7 @@ namespace AllDailyDuties_AgendaService.Services
             _taskService = taskService;
             _repo = repo;
         }
-        public void CreateObject(T objectType, string message, string json)
+        public void CreateObject(object objectType, string message, string json)
         {
             // I know it's ugly, but it does the job
             if (objectType.GetType() == typeof(TaskItemMessage))
