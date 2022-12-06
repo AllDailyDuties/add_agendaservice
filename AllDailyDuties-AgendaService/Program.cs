@@ -14,6 +14,7 @@ using System.Text;
 using System.Configuration;
 using AllDailyDuties_AgendaService.Repositories.Interfaces;
 using AllDailyDuties_AgendaService.Repositories;
+using AllDailyDuties_AgendaService.Models.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.AddScoped<ITaskItemRepo, TaskItemRepo>();
 builder.Services.AddScoped<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IRabbitMQProducer, RabbitMQProducer>();
 builder.Services.AddScoped<IRabbitMQConsumer, RabbitMQConsumer>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 //builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -57,7 +59,8 @@ using (var scope = app.Services.CreateScope())
     var rabbiqMq = scope.ServiceProvider.GetRequiredService<IRabbitMQConsumer>();
     var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
     dbContext.Database.EnsureCreated();
-    rabbiqMq.ConsumeMessage(channel, "user_object");
+    TaskItemMessage newItem = new TaskItemMessage();
+    rabbiqMq.ConsumeMessage(channel, "user_object", newItem);
 }
 
 // Configure the HTTP request pipeline.

@@ -19,13 +19,15 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
         private ITaskItemRepo _repo;
         private TaskUser user;
         private CreateRequest item;
+        private IMessageService _message;
 
-        public RabbitMQConsumer(ITaskService taskService, ITaskItemRepo repo)
+        public RabbitMQConsumer(ITaskService taskService, ITaskItemRepo repo, IMessageService message)
         {
             _taskService = taskService;
             _repo = repo;
+            _message = message;
         }
-        public void ConsumeMessage(IModel channel, string queue)
+        public void ConsumeMessage(IModel channel, string queue, object objectType)
         {
             var cache = RedisConnection.Connection.GetDatabase();
             
@@ -33,7 +35,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             channel.QueueDeclare(queue, exclusive: false);
             //Set Event object which listen message from chanel which is sent by producer
             var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += async (model, eventArgs) =>
+            consumer.Received += (model, eventArgs) =>
             {
                 var props = eventArgs.BasicProperties;
                 var replyProps = channel.CreateBasicProperties();
@@ -41,17 +43,11 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
                 if(cache.KeyExists(props.CorrelationId)){
                     var body = eventArgs.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    user = _taskService.GetTaskUser(message);
 
                     var output = cache.StringGet(props.CorrelationId);
-                    TaskItemMessage taskItem = JsonConvert.DeserializeObject<TaskItemMessage>(output);
-                    Guid guid = Guid.NewGuid();
-                    item = new CreateRequest(guid, taskItem.Title, taskItem.CreatedAt, taskItem.ScheduledAt, user);
-                }
-                
-                await _repo.AddAsync(item);
+                    _message.CreateObject(objectType, message, output);
 
-                //Console.WriteLine($"Token message received: {message} with corrId: {props.CorrelationId}");
+                }
             };
             //read the message
             channel.BasicConsume(queue: queue, autoAck: true, consumer: consumer);

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using AllDailyDuties_AgendaService.Middleware.Messaging.Interfaces;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Collections.Concurrent;

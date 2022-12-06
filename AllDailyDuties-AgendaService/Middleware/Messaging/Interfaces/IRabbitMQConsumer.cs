@@ -4,7 +4,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging.Interfaces
 {
     public interface IRabbitMQConsumer
     {
-        public void ConsumeMessage(IModel channel, string queue);
+        public void ConsumeMessage(IModel channel, string queue, object inObject, object outObject);
 
 
 
