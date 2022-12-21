@@ -3,7 +3,7 @@ on: [push]
 jobs:
   k6_load_test:
     name: k6 Load Test
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
