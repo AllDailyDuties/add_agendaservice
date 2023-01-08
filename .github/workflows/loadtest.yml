@@ -4,15 +4,15 @@ jobs:
   k6_load_test:
     name: k6 Load Test
     runs-on: self-hosted
-    env:
-      INFLUXDB_USERNAME: user
-      INFLUXDB_PASSWORD: user
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
       - name: Run local k6 test
         uses: grafana/k6-action@v0.2.0
+        env:
+          INFLUXDB_USERNAME: user
+          INFLUXDB_PASSWORD: user
         with:
           filename: https://i370341.hera.fhict.nl/load_test.js
           flags: --out influxdb=http://10.1.243.243:8086/monitoring
