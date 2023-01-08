@@ -14,11 +14,11 @@ jobs:
           MY_USERNAME: ${{ secrets.MY_USERNAME }}
           MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
         with:
-          options: |
+          filename: https://i370341.hera.fhict.nl/load_test.js
+          flags: |
+            --out influxdb=http://10.1.243.243:8086/monitoring
             -e MY_USERNAME=${MY_USERNAME}
             -e MY_PASSWORD=${MY_PASSWORD}
-          filename: https://i370341.hera.fhict.nl/load_test.js
-          flags: --out influxdb=http://10.1.243.243:8086/monitoring
 
       - name: Upload performance test results
         uses: actions/upload-artifact@v3
