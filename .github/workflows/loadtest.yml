@@ -12,7 +12,7 @@ jobs:
         uses: grafana/k6-action@v0.2.0
         with:
           filename: https://i370341.hera.fhict.nl/load_test.js
-          flags: --out json=results.json
+          flags: --out http://influxdb:8086/monitoring https://i370341.hera.fhict.nl/load_test.js
 
       - name: Upload performance test results
         uses: actions/upload-artifact@v3
