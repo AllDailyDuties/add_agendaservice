@@ -10,10 +10,13 @@ jobs:
 
       - name: Run local k6 test
         uses: grafana/k6-action@v0.2.0
+        env:
+          MY_USERNAME: user
+          MY_PASSWORD: user
         with:
           options: |
-            -e MY_USERNAME=user
-            -e MY_PASSWORD=user
+            -e MY_USERNAME=${MY_USERNAME}
+            -e MY_PASSWORD=${MY_PASSWORD}
           filename: https://i370341.hera.fhict.nl/load_test.js
           flags: --out influxdb=http://10.1.243.243:8086/monitoring
 
