@@ -4,6 +4,9 @@ jobs:
   k6_load_test:
     name: k6 Load Test
     runs-on: self-hosted
+    env:
+      INFLUXDB_USERNAME: user
+      INFLUXDB_PASSWORD: user
     steps:
       - name: Checkout
         uses: actions/checkout@v1
