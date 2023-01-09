@@ -64,11 +64,12 @@ namespace AllDailyDuties_AgendaService.Controllers
         }
         [HttpPost]
         [Route("/message")]
-        public async Task<IActionResult> CreateTask(string title, DateTime createdAt, DateTime scheduledAt)
+        public async Task<IActionResult> CreateTask(string title, string activity, DateTime createdAt, DateTime scheduledAt)
         {
             var result = new TaskItemMessage()
             {
                 Title = title,
+                Activity = activity,
                 CreatedAt = createdAt,
                 ScheduledAt = scheduledAt
             };

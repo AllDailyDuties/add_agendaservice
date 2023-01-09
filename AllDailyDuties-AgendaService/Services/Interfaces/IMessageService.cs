@@ -2,6 +2,6 @@
 {
     public interface IMessageService
     {
-        void CreateObject(object objectType, string message, string json);
+        void CreateObject<T>(string message, string json, string queue);
     }
 }

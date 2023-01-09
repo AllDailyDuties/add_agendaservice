@@ -2,6 +2,7 @@
 using AllDailyDuties_AgendaService.Models.Tasks;
 using AllDailyDuties_AgendaService.Repositories.Interfaces;
 using AllDailyDuties_AgendaService.Services.Interfaces;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 
 namespace AllDailyDuties_AgendaService.Services
@@ -10,28 +11,63 @@ namespace AllDailyDuties_AgendaService.Services
     {
         private ITaskService _taskService;
         private ITaskItemRepo _repo;
-        public MessageService(ITaskService taskService, ITaskItemRepo repo)
+        public CosmosClient _client;
+        public MessageService(ITaskService taskService, ITaskItemRepo repo, CosmosClient client)
         {
             _taskService = taskService;
             _repo = repo;
+            _client = client;
         }
-        public void CreateObject(object objectType, string message, string json)
+        public void CreateObject<T>(string message, string json, string queue)
         {
-            // I know it's ugly, but it does the job
-            if (objectType.GetType() == typeof(TaskItemMessage))
-            {
-                CreateNewTask(message, json);
-            }
+            T myObject = JsonConvert.DeserializeObject<T>(json);
+
+            CreateNewTaskAsync(message, json, queue);
+
         }
 
-        public void CreateNewTask(string message, string json)
+
+        public async Task CreateNewTaskAsync<T>(string message, T json, string queue)
         {
-            TaskUser user = _taskService.GetTaskUser(message);
-            TaskItemMessage taskItem = JsonConvert.DeserializeObject<TaskItemMessage>(json);
+            string dbname = "AllDailyDuties";
+            string containername = "AgendaService";
+            dynamic obj;
+            Database database = await _client.CreateDatabaseIfNotExistsAsync(dbname);
+            Container container = database.GetContainer(containername);
             Guid guid = Guid.NewGuid();
 
-            CreateRequest item = new CreateRequest(guid, taskItem.Title, taskItem.CreatedAt, taskItem.ScheduledAt, user);
-            _repo.AddAsync(item);
+            // I want to abstract this aswell
+            switch (queue)
+            {
+                case "user_object":
+                    TaskUser user = _taskService.GetTaskUser(message);
+                    obj = new
+                    {
+                        id = guid,
+                        Json = json,
+                        User = user
+                    };
+                    break;
+
+                default:
+                    obj = new
+                    {
+                        id = guid,
+                        Json = json
+                    };
+                    break;
+            }
+
+            //TaskItemMessage taskItem = JsonConvert.DeserializeObject<TaskItemMessage>(json.ToString());
+
+
+            //CreateRequest item = new CreateRequest(guid, taskItem.Title, taskItem.Activity, taskItem.CreatedAt, taskItem.ScheduledAt, user);
+            
+            dynamic dbEntry = await container.CreateItemAsync<dynamic>(
+                item: obj,
+                partitionKey: new PartitionKey(guid.ToString()));
+
+            //_repo.AddAsync(item);
         }
     }
 }

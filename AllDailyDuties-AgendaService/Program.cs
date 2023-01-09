@@ -15,6 +15,7 @@ using System.Configuration;
 using AllDailyDuties_AgendaService.Repositories.Interfaces;
 using AllDailyDuties_AgendaService.Repositories;
 using AllDailyDuties_AgendaService.Models.Shared;
+using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,19 @@ builder.Services.AddScoped<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IRabbitMQProducer, RabbitMQProducer>();
 builder.Services.AddScoped<IRabbitMQConsumer, RabbitMQConsumer>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
+{
+    IHttpClientFactory httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+
+    CosmosClientOptions cosmosClientOptions = new CosmosClientOptions
+    {
+        HttpClientFactory = httpClientFactory.CreateClient,
+        ConnectionMode = ConnectionMode.Gateway
+    };
+    // TODO: Not hardcoded
+    return new CosmosClient("AccountEndpoint=https://mydbskoen.documents.azure.com:443/;AccountKey=ateEj9j8zoUY10PaGRwpCPaafEkb9RcMzP3jceJQEp3kd5iL6NpOmH2Xpa9qKBjxZrRvG0La0jOTACDbMBhzng==", cosmosClientOptions);
+});
 //builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -59,8 +73,9 @@ using (var scope = app.Services.CreateScope())
     var rabbiqMq = scope.ServiceProvider.GetRequiredService<IRabbitMQConsumer>();
     var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
     dbContext.Database.EnsureCreated();
+    // 
     TaskItemMessage newItem = new TaskItemMessage();
-    rabbiqMq.ConsumeMessage(channel, "user_object", newItem);
+    rabbiqMq.ConsumeMessage<TaskItemMessage>(channel, "user_object");
 }
 
 // Configure the HTTP request pipeline.

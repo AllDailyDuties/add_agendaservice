@@ -6,6 +6,7 @@ namespace AllDailyDuties_AgendaService.Models.Tasks
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
+        public string Activity { get; set; }
         public DateTime Created { get; set; }
         public DateTime ScheduledAt { get; set; }
         public TaskUser User { get; set; }
@@ -14,10 +15,11 @@ namespace AllDailyDuties_AgendaService.Models.Tasks
         {
 
         }
-        public TaskItem(Guid _id, string _title, DateTime _created, DateTime _scheduledAt, TaskUser _user)
+        public TaskItem(Guid _id, string _title, string _activity, DateTime _created, DateTime _scheduledAt, TaskUser _user)
         {
             Id = _id;
             Title = _title;
+            Activity = _activity;
             Created = _created;
             ScheduledAt = _scheduledAt;
             User = _user;

@@ -27,7 +27,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             _repo = repo;
             _message = message;
         }
-        public void ConsumeMessage(IModel channel, string queue, object objectType)
+        public void ConsumeMessage<T>(IModel channel, string queue)
         {
             var cache = RedisConnection.Connection.GetDatabase();
             
@@ -45,7 +45,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
                     var message = Encoding.UTF8.GetString(body);
 
                     var output = cache.StringGet(props.CorrelationId);
-                    _message.CreateObject(objectType, message, output);
+                    _message.CreateObject<T>(message, output, queue);
 
                 }
             };
