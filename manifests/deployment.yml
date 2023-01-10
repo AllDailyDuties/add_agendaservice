@@ -19,6 +19,7 @@ spec:
         image: localhost:32000/addagendaservice:latest
         ports:
         - containerPort: 9001
+        imagePullPolicy: Always
         resources:
           limits:
             memory: 2Gi
