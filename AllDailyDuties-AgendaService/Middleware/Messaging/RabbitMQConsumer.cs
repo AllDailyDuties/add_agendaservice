@@ -29,6 +29,8 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
         }
         public void ConsumeMessage<T>(IModel channel, string queue)
         {
+            //Debug console log
+            Console.WriteLine("foo");
             var cache = RedisConnection.Connection.GetDatabase();
             
 
