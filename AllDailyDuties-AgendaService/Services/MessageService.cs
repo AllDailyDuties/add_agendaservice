@@ -61,7 +61,14 @@ namespace AllDailyDuties_AgendaService.Services
             //TaskItemMessage taskItem = JsonConvert.DeserializeObject<TaskItemMessage>(json.ToString());
 
             //CreateRequest item = new CreateRequest(guid, taskItem.Title, taskItem.Activity, taskItem.CreatedAt, taskItem.ScheduledAt, user);
-            
+            dynamic input = new dynamic[] { obj };
+            var response = await container.Scripts.ExecuteStoredProcedureAsync<dynamic>(
+                "validateTitleOnCreate", // your stored procedure name
+                new PartitionKey(guid.ToString()),
+                new dynamic[] { obj});
+
+            var output = response.StatusCode;
+
             dynamic dbEntry = await container.CreateItemAsync<dynamic>(
                 item: obj,
                 partitionKey: new PartitionKey(guid.ToString()));
