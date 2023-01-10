@@ -35,7 +35,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
             channel.QueueDeclare(queue, exclusive: false);
             //Set Event object which listen message from chanel which is sent by producer
             var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, eventArgs) =>
+            consumer.Received += async (model, eventArgs) =>
             {
                 var props = eventArgs.BasicProperties;
                 var replyProps = channel.CreateBasicProperties();
@@ -45,7 +45,7 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
                     var message = Encoding.UTF8.GetString(body);
 
                     var output = cache.StringGet(props.CorrelationId);
-                    _message.CreateObject<T>(message, output, queue);
+                    await _message.CreateObject<T>(message, output, queue);
 
                 }
             };

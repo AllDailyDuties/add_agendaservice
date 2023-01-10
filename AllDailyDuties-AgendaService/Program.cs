@@ -73,8 +73,7 @@ using (var scope = app.Services.CreateScope())
     var rabbiqMq = scope.ServiceProvider.GetRequiredService<IRabbitMQConsumer>();
     var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
     dbContext.Database.EnsureCreated();
-    // 
-    TaskItemMessage newItem = new TaskItemMessage();
+
     rabbiqMq.ConsumeMessage<TaskItemMessage>(channel, "user_object");
 }
 

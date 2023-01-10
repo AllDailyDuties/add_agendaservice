@@ -18,11 +18,11 @@ namespace AllDailyDuties_AgendaService.Services
             _repo = repo;
             _client = client;
         }
-        public void CreateObject<T>(string message, string json, string queue)
+        public async Task CreateObject<T>(string message, string json, string queue)
         {
             T myObject = JsonConvert.DeserializeObject<T>(json);
 
-            CreateNewTaskAsync(message, json, queue);
+            CreateNewTaskAsync(message, myObject, queue);
 
         }
 
@@ -59,7 +59,6 @@ namespace AllDailyDuties_AgendaService.Services
             }
 
             //TaskItemMessage taskItem = JsonConvert.DeserializeObject<TaskItemMessage>(json.ToString());
-
 
             //CreateRequest item = new CreateRequest(guid, taskItem.Title, taskItem.Activity, taskItem.CreatedAt, taskItem.ScheduledAt, user);
             
