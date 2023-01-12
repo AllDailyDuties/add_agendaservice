@@ -15,16 +15,10 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
 {
     public class RabbitMQConsumer : IRabbitMQConsumer
     {
-        private ITaskService _taskService;
-        private ITaskItemRepo _repo;
-        private TaskUser user;
-        private CreateRequest item;
         private IMessageService _message;
 
-        public RabbitMQConsumer(ITaskService taskService, ITaskItemRepo repo, IMessageService message)
+        public RabbitMQConsumer(IMessageService message)
         {
-            _taskService = taskService;
-            _repo = repo;
             _message = message;
         }
         public void ConsumeMessage<T>(IModel channel, string queue)
@@ -46,8 +40,9 @@ namespace AllDailyDuties_AgendaService.Middleware.Messaging
                     var body = eventArgs.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
 
-                    var output = cache.StringGet(props.CorrelationId);
+                    var output = await cache.StringGetAsync(props.CorrelationId);
                     await _message.CreateObject<T>(message, output, queue);
+                    System.Threading.Thread.Sleep(50);
 
                 }
             };

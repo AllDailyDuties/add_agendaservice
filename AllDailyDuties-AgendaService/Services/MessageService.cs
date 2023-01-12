@@ -1,4 +1,5 @@
-﻿using AllDailyDuties_AgendaService.Models.Shared;
+﻿using AllDailyDuties_AgendaService.Middleware.Messaging;
+using AllDailyDuties_AgendaService.Models.Shared;
 using AllDailyDuties_AgendaService.Models.Tasks;
 using AllDailyDuties_AgendaService.Repositories.Interfaces;
 using AllDailyDuties_AgendaService.Services.Interfaces;
@@ -11,13 +12,16 @@ namespace AllDailyDuties_AgendaService.Services
     {
         private ITaskService _taskService;
         private ITaskItemRepo _repo;
-        public CosmosClient _client;
-        public MessageService(ITaskService taskService, ITaskItemRepo repo, CosmosClient client)
+        private CosmosClient _client;
+        private readonly IRabbitMQProducer _rabbit;
+        public MessageService(ITaskService taskService, ITaskItemRepo repo, CosmosClient client, IRabbitMQProducer rabbit)
         {
             _taskService = taskService;
             _repo = repo;
             _client = client;
+            _rabbit = rabbit;
         }
+
         public async Task CreateObject<T>(string message, string json, string queue)
         {
             T myObject = JsonConvert.DeserializeObject<T>(json);
@@ -35,8 +39,11 @@ namespace AllDailyDuties_AgendaService.Services
             Database database = await _client.CreateDatabaseIfNotExistsAsync(dbname);
             Container container = database.GetContainer(containername);
             Guid guid = Guid.NewGuid();
+            //string dateQuery = string.Format("SELECT c.User.Username, c.User.Email, c.Json.Title, c.Json.Activity, c.Json.ScheduledAt FROM c WHERE c.Json.Activity = {0} " +
+             //   "AND c.User.Email != {1} AND DateTimeDiff(\"hh\", c.Json.ScheduledAt, {2}) = 0", );
 
-            // I want to abstract this aswell
+
+
             switch (queue)
             {
                 case "user_object":
@@ -45,8 +52,39 @@ namespace AllDailyDuties_AgendaService.Services
                     {
                         id = guid,
                         Json = json,
-                        User = user
+                        User = user,
+                        Status = "unassigned"
                     };
+                    // Initial idea is to check if there are >4 db entries with same activity and same hour
+                    //
+                    //DateTime date = Convert.ToDateTime(obj.Json.ScheduledAt);
+                    //string cosmosDbFormat = date.ToString("yyyy-MM-ddTHH:mm:ss");
+                    //string dateQuery = string.Format("SELECT COUNT(1) as count FROM c WHERE c.Json.Activity = '{0}' " +
+                    //"AND c.User.Email != '{1}' AND DateTimeDiff(\"hh\", c.Json.ScheduledAt, '{2}') = 0", obj.Json.Activity, obj.User.Email, cosmosDbFormat);
+
+                    // For debug purposes, only doing same activity for now
+                    string dataQuery = string.Format("SELECT c.id, c.Json.Title, " +
+                        "c.Json.Activity, c.Json.ScheduledAt, c.User.Username, c.User.Email FROM c WHERE c.Json.Activity = '{0}' AND c.User.Email != '{1}' AND c.Status = 'unassigned'", obj.Json.Activity, obj.User.Email);
+                    var query = container.GetItemQueryIterator<dynamic>(dataQuery);
+
+                    List<string> primaryKeyList = new List<string>();
+                    while (query.HasMoreResults)
+                    {
+                        FeedResponse<dynamic> result = await query.ReadNextAsync();
+                        // Are there 2 people other than you with the same activity?
+                        if (result.Count >= 2)
+                        {
+                            string mainKey = Convert.ToString(obj.id);
+                            primaryKeyList.Add(mainKey);
+                            foreach (var item in result)
+                            {
+                                primaryKeyList.Add((string)item.id);
+                                // Send RabbitMQ message to Activity servcice to create activity and delete from AgendaServiceDB
+                            }
+                            _rabbit.SendMessage(primaryKeyList, "new_activity", new { foo = "bar" });
+                            Console.WriteLine(primaryKeyList);
+                        }
+                    }
                     break;
 
                 default:
@@ -60,18 +98,10 @@ namespace AllDailyDuties_AgendaService.Services
 
             //TaskItemMessage taskItem = JsonConvert.DeserializeObject<TaskItemMessage>(json.ToString());
 
-            //CreateRequest item = new CreateRequest(guid, taskItem.Title, taskItem.Activity, taskItem.CreatedAt, taskItem.ScheduledAt, user);
-            dynamic input = new dynamic[] { obj };
-            var response = await container.Scripts.ExecuteStoredProcedureAsync<dynamic>(
-                "validateTitleOnCreate", // your stored procedure name
-                new PartitionKey(guid.ToString()),
-                new dynamic[] { obj});
-
-            var output = response.StatusCode;
-
             dynamic dbEntry = await container.CreateItemAsync<dynamic>(
                 item: obj,
                 partitionKey: new PartitionKey(guid.ToString()));
+
 
             //_repo.AddAsync(item);
         }
