@@ -17,9 +17,16 @@ spec:
       containers:
       - name: addagendaservice
         image: localhost:32000/addagendaservice:latest
+        volumeMounts:
+        - name: agenda-appsettings-config
+          mountPath: /app/config
         ports:
         - containerPort: 9001
         imagePullPolicy: Always
         resources:
           limits:
             memory: 2Gi
+    volumes:
+      - name: agenda-appsettings-config
+        configMap:
+          name: agenda-appsettings-config
