@@ -21,8 +21,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Console.ReadKey();
 // Add services to the container.
-
 var connectionString = builder.Configuration.GetConnectionString("Default");
+var cosmosDB = builder.Configuration.GetConnectionString("CosmosDBSecret");
 builder.Services.AddDbContext<DataContext>(options =>
 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 //builder.Services.AddDbContextFactory<DataContext>(lifetime: ServiceLifetime.Scoped);
@@ -41,15 +41,15 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<CosmosClient>(serviceProvider =>
 {
-    IHttpClientFactory httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
+    IHttpClientFactory httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
     CosmosClientOptions cosmosClientOptions = new CosmosClientOptions
     {
         HttpClientFactory = httpClientFactory.CreateClient,
         ConnectionMode = ConnectionMode.Gateway
     };
     // TODO: Not hardcoded
-    return new CosmosClient("AccountEndpoint=https://mydbskoen.documents.azure.com:443/;AccountKey=ateEj9j8zoUY10PaGRwpCPaafEkb9RcMzP3jceJQEp3kd5iL6NpOmH2Xpa9qKBjxZrRvG0La0jOTACDbMBhzng==", cosmosClientOptions);
+    return new CosmosClient(cosmosDB, cosmosClientOptions);
 });
 //builder.Services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddHttpContextAccessor();

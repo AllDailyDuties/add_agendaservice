@@ -64,9 +64,9 @@ namespace AllDailyDuties_AgendaService.Services
 
                     // For debug purposes, only doing same activity for now
                     string dataQuery = string.Format("SELECT c.id, c.Json.Title, " +
-                        "c.Json.Activity, c.Json.ScheduledAt, c.User.Username, c.User.Email FROM c WHERE c.Json.Activity = '{0}' AND c.User.Email != '{1}' AND c.Status = 'unassigned'", obj.Json.Activity, obj.User.Email);
+                        "c.Json.Activity, c.Json.ScheduledAt, c.User.Username, c.User.Email FROM c WHERE c.Json.Activity = '{0}' AND c.User.Email != '{1}' AND c.Status = 'unassigned' AND c.Json.Title = '{2}'", obj.Json.Activity, obj.User.Email, obj.Json.Title);
                     var query = container.GetItemQueryIterator<dynamic>(dataQuery);
-
+                    
                     List<string> primaryKeyList = new List<string>();
                     while (query.HasMoreResults)
                     {
