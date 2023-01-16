@@ -1,1 +1,24 @@
+on: [push]
 
+jobs:
+  k6_load_test:
+    name: k6 Load Test
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run local k6 test
+        uses: grafana/k6-action@v0.2.0
+        env:
+          MY_USERNAME: ${{ secrets.MY_USERNAME }}
+          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+        with:
+          filename: https://i370341.hera.fhict.nl/load_test.js
+          flags: --out influxdb=http://user:user@10.1.243.243:8086/monitoring
+
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: k6-report
+          path: results.json
