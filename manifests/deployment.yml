@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         resources:
           limits:
-            memory: 500Mi
+            memory: 225Mi
       volumes:
         - name: agenda-appsettings-config
           configMap:
